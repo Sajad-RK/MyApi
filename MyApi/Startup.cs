@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Data;
+using Data.Cotracts;
+using Data.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -30,9 +32,12 @@ namespace MyApi
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 //options.UseSqlServer("Data Source=HABIBI-MATIN;Initial Catalog=MyApi_DB;user id=sajadramezani;Password=123456");
-                options.UseSqlServer(Configuration.GetConnectionString("SqlServer"));
+                options.UseSqlServer(Configuration.GetSection("ConnectionsString").Value);
             });
             services.AddControllers();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IUserRepository, UserRepository>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
