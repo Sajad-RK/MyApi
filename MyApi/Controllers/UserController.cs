@@ -1,8 +1,11 @@
 ﻿using Data.Cotracts;
+using ElmahCore;
 using Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using MyApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,15 +17,17 @@ using WebFramework.Filters;
 namespace MyApi.Controllers
 {
     [Route("api/[controller]")]
-    //[ApiResultFilter]
+    [ApiResultFilter]
     [ApiController]
     public class UserController : ControllerBase
     {
         private readonly IUserRepository userRepository;
+        private readonly ILogger<UserController> logger;
 
-        public UserController(IUserRepository userRepository)
+        public UserController(IUserRepository userRepository, ILogger<UserController> logger)
         {
             this.userRepository = userRepository;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -42,11 +47,22 @@ namespace MyApi.Controllers
             return user;
         }
         [HttpPost]
-        public async Task<ApiResult<User>> Create(User user, CancellationToken cancellationToken)
+        public async Task<ApiResult<User>> Create(UserDto userDto, CancellationToken cancellationToken)
         {
-            await userRepository.AddAsync(user, cancellationToken);
+            logger.LogError("UserController/Create Invoked");
+            HttpContext.RiseError(new Exception("UserController/Create Invoked"));//elmah
+            //var exist = await userRepository.TableNoTracking.AnyAsync(w => w.Username == userDto.Username);
+            var user = new User()
+            {
+                Age = userDto.Age,
+                FullName = userDto.FullName,
+                Gender = userDto.Gender,
+                Username = userDto.Username
+            };
+            //await userRepository.AddAsync(user, cancellationToken);
+            await userRepository.AddAsync(user, userDto.Password, cancellationToken);
             //return new ApiResult(true, ApiResultStatusCode.Success);
-            return Ok(user);
+            return user;
         }
         [HttpPut]
         public async Task<ApiResult> Update(int id, User user, CancellationToken cancellationToken)

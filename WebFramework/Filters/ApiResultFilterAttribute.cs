@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Common;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Collections.Generic;
@@ -30,9 +31,10 @@ namespace WebFramework.Filters
             else if (context.Result is BadRequestObjectResult badRequestObjectResult)
             {
                 var message = badRequestObjectResult.Value.ToString();
-                if (badRequestObjectResult.Value is SerializableError errors)
+                if (badRequestObjectResult.Value is ValidationProblemDetails errors/*SerializableError errors*/)
                 {
-                    var errorMessages = errors.SelectMany(p => (string[])p.Value).Distinct();
+                    //var errorMessages = errors.SelectMany(p => (string[])p.Value).Distinct();
+                    var errorMessages = errors.Errors.SelectMany(a => a.Value).Distinct();//.SelectMany(p => (string[])p.Value).Distinct();
                     message = string.Join(" | ", errorMessages);
                 }
                 var apiResult = new ApiResult(false, ApiResultStatusCode.BadRequest, message);

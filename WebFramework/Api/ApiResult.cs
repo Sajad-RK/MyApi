@@ -1,5 +1,7 @@
-﻿using Common.Utilities;
+﻿using Common;
+using Common.Utilities;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -56,6 +58,7 @@ namespace WebFramework.Api
     }
     public class ApiResult<TData> : ApiResult where TData : class
     {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public TData Data { get; set; }
 
 
@@ -133,17 +136,5 @@ namespace WebFramework.Api
         //    };
         //}
     }
-    public enum ApiResultStatusCode
-    {
-        [Display(Name = "عملیات موفق")]
-        Success = 0,
-        [Display(Name = "خطایی در سرور رخ داده")]
-        ServerError = 1,
-        [Display(Name = "پارامترهای ارسالی معتبر نیستند")]
-        BadRequest = 2,
-        [Display(Name = "یاف نشد")]
-        NotFound = 3,
-        [Display(Name = "لیست خالی است")]
-        ListEmpty = 4
-    }
+
 }

@@ -7,5 +7,6 @@ namespace Data.Cotracts
     public interface IUserRepository : IRepository<User>
     {
         Task<User> GetByUserAndPass(string username, string password, CancellationToken cancellationToken);
+        Task AddAsync(User user, string password, CancellationToken cancellationToken);
     }
 }
