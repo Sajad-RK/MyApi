@@ -1,11 +1,14 @@
-﻿using Data.Cotracts;
+﻿using Common.Exceptions;
+using Data.Cotracts;
 using ElmahCore;
 using Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MyApi.Models;
+using Services.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,15 +26,21 @@ namespace MyApi.Controllers
     {
         private readonly IUserRepository userRepository;
         private readonly ILogger<UserController> logger;
+        private readonly IJWTService jwtService;
 
-        public UserController(IUserRepository userRepository, ILogger<UserController> logger)
+        public UserController(IUserRepository userRepository, 
+            ILogger<UserController> logger,
+            IJWTService jwtService
+            )
         {
             this.userRepository = userRepository;
             this.logger = logger;
+            this.jwtService = jwtService;
         }
 
         [HttpGet]
         [ApiResultFilter]
+        [Authorize]
         public async Task<List<User>> Get(CancellationToken cancellationToken)
         {
             var users = await userRepository.TableNoTracking.ToListAsync(cancellationToken);
@@ -81,6 +90,16 @@ namespace MyApi.Controllers
             return Ok();
         }
 
+        [HttpGet("[action]")]
+        public async Task<string> Token(string username, string password, CancellationToken cancellationToken)
+        {
+            var user = await userRepository.GetByUserAndPass(username, password, cancellationToken);
+            if (user == null)
+                throw new BadRequestException("invalid credentilas");
+
+            var jwt = jwtService.Generate(user);
+            return jwt;
+        }
         [HttpDelete]
         public async Task<ApiResult> Delete(int id, CancellationToken cancellationToken)
         {

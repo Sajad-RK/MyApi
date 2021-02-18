@@ -16,6 +16,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Services.Services;
+using WebFramework.Configuration;
 using WebFramework.Middlewares;
 
 namespace MyApi
@@ -46,7 +48,8 @@ namespace MyApi
             });
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUserRepository, UserRepository>();
-
+            services.AddScoped<IJWTService, JWTService>();
+            services.AddJwtAuthenticateion();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -64,9 +67,9 @@ namespace MyApi
             //}
             app.UseElmah();
             app.UseHttpsRedirection();
-             
+            
             app.UseRouting();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
