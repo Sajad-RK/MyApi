@@ -46,7 +46,8 @@ namespace WebFramework.Configuration
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(secretKey),
                     ValidateAudience = false,
-                    ValidateIssuer = false
+                    ValidateIssuer = false,
+                    TokenDecryptionKey = new SymmetricSecurityKey(secretKey)
                 };
             });
         }

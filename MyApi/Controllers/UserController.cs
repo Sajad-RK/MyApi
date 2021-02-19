@@ -30,10 +30,7 @@ namespace MyApi.Controllers
         private readonly ILogger<UserController> logger;
         private readonly IJWTService jwtService;
 
-        public UserController(IUserRepository userRepository, 
-            ILogger<UserController> logger,
-            IJWTService jwtService
-            )
+        public UserController(IUserRepository userRepository, ILogger<UserController> logger, IJWTService jwtService)
         {
             this.userRepository = userRepository;
             this.logger = logger;

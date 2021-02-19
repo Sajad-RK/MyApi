@@ -24,7 +24,8 @@ namespace Services.Services
             var secretKey = Encoding.UTF8.GetBytes(settings.Value.JWTSettings.SecretKey); // longer than 16 characters
             var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey),
                 SecurityAlgorithms.HmacSha256Signature);
-
+            var encryptionKey = Encoding.UTF8.GetBytes(settings.Value.JWTSettings.EncryptKey);
+            var encryptionCredentials = new EncryptingCredentials(new SymmetricSecurityKey(encryptionKey), SecurityAlgorithms.Aes128KW, SecurityAlgorithms.Aes128CbcHmacSha256);
             var claims = _gerClaims(user);
 
             var descriptor = new SecurityTokenDescriptor
@@ -36,7 +37,9 @@ namespace Services.Services
                 //Expires = DateTime.Now.AddHours(1),
                 Expires = DateTime.Now.AddMinutes(settings.Value.JWTSettings.ExpirationTime),
                 SigningCredentials = signingCredentials,
-                Subject = new ClaimsIdentity(claims)
+                EncryptingCredentials = encryptionCredentials,
+                Subject = new ClaimsIdentity(claims),
+                
             };
 
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();

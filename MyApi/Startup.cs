@@ -38,7 +38,6 @@ namespace MyApi
             services.Configure<Common.SiteSettings>(Configuration.GetSection(nameof(Common.SiteSettings)));
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                //options.UseSqlServer("Data Source=HABIBI-MATIN;Initial Catalog=MyApi_DB;user id=sajadramezani;Password=123456");
                 options.UseSqlServer(Configuration.GetSection("ConnectionsString").Value);
             });
             services.AddControllers();
@@ -73,19 +72,12 @@ namespace MyApi
 
             app.UseAuthentication();
             
-            
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
-            //app.UseElmah();
-
-            //app.UseHttpsRedirection();
-
-            //app.UseAuthentication();
-            //app.UseMvc();
         }
     }
 }
