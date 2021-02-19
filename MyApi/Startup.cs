@@ -27,13 +27,15 @@ namespace MyApi
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            _siteSettings = Configuration.GetSection(nameof(Common.SiteSettings)).Get<Common.SiteSettings>();
         }
-
+        private readonly Common.SiteSettings _siteSettings;
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<Common.SiteSettings>(Configuration.GetSection(nameof(Common.SiteSettings)));
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 //options.UseSqlServer("Data Source=HABIBI-MATIN;Initial Catalog=MyApi_DB;user id=sajadramezani;Password=123456");
@@ -49,7 +51,7 @@ namespace MyApi
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IJWTService, JWTService>();
-            services.AddJwtAuthenticateion();
+            services.AddJwtAuthenticateion(_siteSettings.JWTSettings);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -67,15 +69,23 @@ namespace MyApi
             //}
             app.UseElmah();
             app.UseHttpsRedirection();
-            
             app.UseRouting();
+
             app.UseAuthentication();
+            
+            
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+            //app.UseElmah();
+
+            //app.UseHttpsRedirection();
+
+            //app.UseAuthentication();
+            //app.UseMvc();
         }
     }
 }

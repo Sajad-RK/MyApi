@@ -9,38 +9,45 @@ namespace WebFramework.Configuration
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddJwtAuthenticateion(this IServiceCollection services)
+        public static void AddJwtAuthenticateion(this IServiceCollection services, Common.JWTSettings jWTSettings)
         {
             //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme);
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                //options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(options =>
             {
-                var secretKey = Encoding.UTF8.GetBytes("MysecretKEY123456789");
-                var validationParameters = new TokenValidationParameters
-                {
-                    ClockSkew = TimeSpan.Zero,  // default 5 min
-                    RequireSignedTokens = true,
+                //var secretKey = Encoding.UTF8.GetBytes("MysecretKEY123456789");
+                var secretKey = Encoding.UTF8.GetBytes(jWTSettings.SecretKey);
+                //var validationParameters = new TokenValidationParameters
+                //{
+                //    ClockSkew = TimeSpan.Zero,  // default 5 min
+                //    RequireSignedTokens = true,
 
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+                //    ValidateIssuerSigningKey = true,
+                //    IssuerSigningKey = new SymmetricSecurityKey(secretKey),
 
-                    RequireExpirationTime = true,
-                    ValidateLifetime = true,
+                //    RequireExpirationTime = true,
+                //    ValidateLifetime = true,
 
-                    ValidateAudience = true,
-                    ValidAudience = "",
+                //    ValidateAudience = true,
+                //    ValidAudience = "",
 
-                    ValidateIssuer = true,
-                    ValidIssuer = ""
+                //    ValidateIssuer = true,
+                //    ValidIssuer = ""
                 
-                };
+                //};
                 options.RequireHttpsMetadata = false;
                 options.SaveToken = true;
-                options.TokenValidationParameters = validationParameters;
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+                    ValidateAudience = false,
+                    ValidateIssuer = false
+                };
             });
         }
     }

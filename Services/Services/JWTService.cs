@@ -1,4 +1,6 @@
-﻿using Entities;
+﻿using Common;
+using Entities;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -10,9 +12,16 @@ namespace Services.Services
 {
     public class JWTService : IJWTService
     {
+        private readonly IOptionsSnapshot<SiteSettings> settings;
+
+        public JWTService(IOptionsSnapshot<SiteSettings> settings)
+        {
+            this.settings = settings;
+        }
         public string Generate(User user)
         {
-            var secretKey = Encoding.UTF8.GetBytes("MysecretKEY123456789"); // longer than 16 characters
+            //var secretKey = Encoding.UTF8.GetBytes("MysecretKEY123456789"); // longer than 16 characters
+            var secretKey = Encoding.UTF8.GetBytes(settings.Value.JWTSettings.SecretKey); // longer than 16 characters
             var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey),
                 SecurityAlgorithms.HmacSha256Signature);
 
@@ -20,11 +29,12 @@ namespace Services.Services
 
             var descriptor = new SecurityTokenDescriptor
             {
-                Issuer = "mywebsite",
-                Audience = "mywebsite",
-                IssuedAt = DateTime.Now,
-                NotBefore = DateTime.Now.AddMinutes(0),
-                Expires = DateTime.Now.AddHours(1),
+                //Issuer = "mywebsite",
+                //Audience = "mywebsite",
+                //IssuedAt = DateTime.Now,
+                //NotBefore = DateTime.Now.AddMinutes(0),
+                //Expires = DateTime.Now.AddHours(1),
+                Expires = DateTime.Now.AddMinutes(settings.Value.JWTSettings.ExpirationTime),
                 SigningCredentials = signingCredentials,
                 Subject = new ClaimsIdentity(claims)
             };

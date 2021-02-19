@@ -16,6 +16,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using WebFramework.Api;
 using WebFramework.Filters;
+using Common.Utilities;
+using System.Security.Claims;
 
 namespace MyApi.Controllers
 {
@@ -40,9 +42,15 @@ namespace MyApi.Controllers
 
         [HttpGet]
         [ApiResultFilter]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<List<User>> Get(CancellationToken cancellationToken)
         {
+            //var userName = HttpContext.User.Identity.GetUserName();
+            //userName = HttpContext.User.Identity.Name;
+            //var userId = HttpContext.User.Identity.GetUserId();
+            //var userIdINT = HttpContext.User.Identity.GetUserId<int>();
+            //var phone = HttpContext.User.Identity.FindFirstValue(ClaimTypes.MobilePhone);
+            //var roles = HttpContext.User.Identity.FindFirstValue(ClaimTypes.Role);
             var users = await userRepository.TableNoTracking.ToListAsync(cancellationToken);
             return users;
         }
