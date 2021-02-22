@@ -124,12 +124,15 @@ namespace MyApi.Controllers
         [HttpGet("[action]")]
         public async Task<string> Token(string username, string password, CancellationToken cancellationToken)
         {
-            var user = await userManager.FindByEmailAsync(username);
+            var user = await userManager.FindByNameAsync(username);
             //var user = await userRepository.GetByUserAndPass(username, password, cancellationToken);
             if (user == null)
                 throw new BadRequestException("invalid credentilas");
-
-            var jwt = jwtService.Generate(user);
+            if(!userManager.CheckPasswordAsync(user, password).Result)
+            {
+                throw new BadRequestException("invalid credentilas");
+            }
+            var jwt = await jwtService.Generate(user);
             return jwt;
         }
         [HttpDelete]

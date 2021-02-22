@@ -23,6 +23,16 @@ namespace Data.Repositories
             return Table.Where(a => a.UserName == username && a.PasswordHash == hashed).FirstOrDefaultAsync(cancellationToken);
         }
 
+        public Task UpdateLastLoginDateAsync(User user, CancellationToken cancellationToken)
+        {
+            user.LastLoginDate = DateTimeOffset.Now;
+            return UpdateAsync(user, cancellationToken);
+        }
+        public Task UpdateSecuirtyStampAsync(User user, CancellationToken cancellationToken)
+        {
+            //user.SecurityStamp = Guid.NewGuid();
+            return UpdateAsync(user, cancellationToken);
+        }
         public async Task AddAsync(User user, string password, CancellationToken cancellationToken)
         {
             var exist = await TableNoTracking.AnyAsync(a => a.UserName == user.UserName);
