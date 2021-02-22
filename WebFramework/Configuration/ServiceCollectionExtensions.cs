@@ -11,7 +11,6 @@ namespace WebFramework.Configuration
     {
         public static void AddJwtAuthenticateion(this IServiceCollection services, Common.JWTSettings jWTSettings)
         {
-            //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme);
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -19,36 +18,32 @@ namespace WebFramework.Configuration
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(options =>
             {
-                //var secretKey = Encoding.UTF8.GetBytes("MysecretKEY123456789");
-                var secretKey = Encoding.UTF8.GetBytes(jWTSettings.SecretKey);
-                //var validationParameters = new TokenValidationParameters
-                //{
-                //    ClockSkew = TimeSpan.Zero,  // default 5 min
-                //    RequireSignedTokens = true,
+                var secretkey = Encoding.UTF8.GetBytes(jWTSettings.SecretKey);
+                var encryptionkey = Encoding.UTF8.GetBytes(jWTSettings.EncryptKey);
 
-                //    ValidateIssuerSigningKey = true,
-                //    IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+                var validationParameters = new TokenValidationParameters
+                {
+                    ClockSkew = TimeSpan.Zero, // default: 5 min
+                    RequireSignedTokens = true,
 
-                //    RequireExpirationTime = true,
-                //    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(secretkey),
 
-                //    ValidateAudience = true,
-                //    ValidAudience = "",
+                    RequireExpirationTime = true,
+                    ValidateLifetime = true,
 
-                //    ValidateIssuer = true,
-                //    ValidIssuer = ""
-                
-                //};
+                    ValidateAudience = true, //default : false
+                    ValidAudience = jWTSettings.Audience,
+
+                    ValidateIssuer = true, //default : false
+                    ValidIssuer = jWTSettings.Issuer,
+
+                    TokenDecryptionKey = new SymmetricSecurityKey(encryptionkey)
+                };
+
                 options.RequireHttpsMetadata = false;
                 options.SaveToken = true;
-                options.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(secretKey),
-                    ValidateAudience = false,
-                    ValidateIssuer = false,
-                    TokenDecryptionKey = new SymmetricSecurityKey(secretKey)
-                };
+                options.TokenValidationParameters = validationParameters;
             });
         }
     }

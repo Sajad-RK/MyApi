@@ -18,6 +18,7 @@ using WebFramework.Api;
 using WebFramework.Filters;
 using Common.Utilities;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 
 namespace MyApi.Controllers
 {
@@ -29,12 +30,20 @@ namespace MyApi.Controllers
         private readonly IUserRepository userRepository;
         private readonly ILogger<UserController> logger;
         private readonly IJWTService jwtService;
+        private readonly UserManager<User> userManager;
+        private readonly RoleManager<Role> roleManager;
+        private readonly SignInManager<User> signInManager;
 
-        public UserController(IUserRepository userRepository, ILogger<UserController> logger, IJWTService jwtService)
+        public UserController(IUserRepository userRepository, ILogger<UserController> logger,
+            IJWTService jwtService, UserManager<User> userManager, RoleManager<Role> roleManager,
+            SignInManager<User> signInManager)
         {
             this.userRepository = userRepository;
             this.logger = logger;
             this.jwtService = jwtService;
+            this.userManager = userManager;
+            this.roleManager = roleManager;
+            this.signInManager = signInManager;
         }
 
         [HttpGet]
@@ -42,6 +51,7 @@ namespace MyApi.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<List<User>> Get(CancellationToken cancellationToken)
         {
+            var t = HttpContext;
             //var userName = HttpContext.User.Identity.GetUserName();
             //userName = HttpContext.User.Identity.Name;
             //var userId = HttpContext.User.Identity.GetUserId();
@@ -53,12 +63,14 @@ namespace MyApi.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ApiResult<User>> Get(int id, CancellationToken cancellationToken)
+        public async Task<ApiResult<User>> Get(string id, CancellationToken cancellationToken)
         {
-            var user = await userRepository.GetByIdAsync(cancellationToken, id);
-            if (user == null)
+            var user2 = await userManager.FindByIdAsync(id.ToString());
+
+            //var user = await userRepository.GetByIdAsync(cancellationToken, id);
+            if (user2 == null)
                 return NotFound();
-            return user;
+            return user2;
         }
         [HttpPost]
         public async Task<ApiResult<User>> Create(UserDto userDto, CancellationToken cancellationToken)
@@ -71,11 +83,25 @@ namespace MyApi.Controllers
                 Age = userDto.Age,
                 FullName = userDto.FullName,
                 Gender = userDto.Gender,
-                Username = userDto.Username
+                UserName = userDto.Username,
+                Email = userDto.Username
             };
-            //await userRepository.AddAsync(user, cancellationToken);
-            await userRepository.AddAsync(user, userDto.Password, cancellationToken);
-            //return new ApiResult(true, ApiResultStatusCode.Success);
+            var result = await userManager.CreateAsync(user, userDto.Password);
+            if (result.Succeeded)
+            {
+                var result3 = await userManager.AddToRoleAsync(user, "Admin");
+                if (result3.Succeeded)
+                    return user;
+            }
+            //var result2 = await roleManager.CreateAsync(new Role()
+            //{
+            //    Name = "Admin",
+            //    Description = "amin role"
+            //});
+
+            ////await userRepository.AddAsync(user, cancellationToken);
+            //await userRepository.AddAsync(user, userDto.Password, cancellationToken);
+            ////return new ApiResult(true, ApiResultStatusCode.Success);
             return user;
         }
         [HttpPut]
@@ -83,7 +109,7 @@ namespace MyApi.Controllers
         {
             var updateUser = await userRepository.GetByIdAsync(cancellationToken, id);
 
-            updateUser.Username = user.Username;
+            updateUser.UserName = user.UserName;
             updateUser.PasswordHash = user.PasswordHash;
             updateUser.FullName = user.FullName;
             updateUser.Age = user.Age;
@@ -98,7 +124,8 @@ namespace MyApi.Controllers
         [HttpGet("[action]")]
         public async Task<string> Token(string username, string password, CancellationToken cancellationToken)
         {
-            var user = await userRepository.GetByUserAndPass(username, password, cancellationToken);
+            var user = await userManager.FindByEmailAsync(username);
+            //var user = await userRepository.GetByUserAndPass(username, password, cancellationToken);
             if (user == null)
                 throw new BadRequestException("invalid credentilas");
 

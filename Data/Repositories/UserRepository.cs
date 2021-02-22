@@ -20,12 +20,12 @@ namespace Data.Repositories
         public Task<User> GetByUserAndPass(string username, string password, CancellationToken cancellationToken)
         {
             var hashed = Common.Utilities.SecurityHelper.GetSha256Hash(password);
-            return Table.Where(a => a.Username == username && a.PasswordHash == hashed).FirstOrDefaultAsync(cancellationToken);
+            return Table.Where(a => a.UserName == username && a.PasswordHash == hashed).FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task AddAsync(User user, string password, CancellationToken cancellationToken)
         {
-            var exist = await TableNoTracking.AnyAsync(a => a.Username == user.Username);
+            var exist = await TableNoTracking.AnyAsync(a => a.UserName == user.UserName);
             if (exist)
                 throw new BadRequestException("نام کاربری تکراری است");
             var passwordHash = SecurityHelper.GetSha256Hash(password);

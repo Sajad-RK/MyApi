@@ -20,43 +20,39 @@ namespace Services.Services
         }
         public string Generate(User user)
         {
-            //var secretKey = Encoding.UTF8.GetBytes("MysecretKEY123456789"); // longer than 16 characters
             var secretKey = Encoding.UTF8.GetBytes(settings.Value.JWTSettings.SecretKey); // longer than 16 characters
-            var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey),
-                SecurityAlgorithms.HmacSha256Signature);
+            var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey), SecurityAlgorithms.HmacSha256Signature);
+
             var encryptionKey = Encoding.UTF8.GetBytes(settings.Value.JWTSettings.EncryptKey);
-            var encryptionCredentials = new EncryptingCredentials(new SymmetricSecurityKey(encryptionKey), SecurityAlgorithms.Aes128KW, SecurityAlgorithms.Aes128CbcHmacSha256);
-            var claims = _gerClaims(user);
+            var encryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(encryptionKey), SecurityAlgorithms.Aes128KW, SecurityAlgorithms.Aes128CbcHmacSha256);
+
+            var claims = _getClaims(user);
 
             var descriptor = new SecurityTokenDescriptor
             {
-                //Issuer = "mywebsite",
-                //Audience = "mywebsite",
-                //IssuedAt = DateTime.Now,
-                //NotBefore = DateTime.Now.AddMinutes(0),
-                //Expires = DateTime.Now.AddHours(1),
+                Issuer = settings.Value.JWTSettings.Issuer,
+                Audience = settings.Value.JWTSettings.Audience,
+                IssuedAt = DateTime.Now,
+                //NotBefore = DateTime.Now.AddMinutes(settings.Value.JWTSettings.NotBeforeMinutes),
                 Expires = DateTime.Now.AddMinutes(settings.Value.JWTSettings.ExpirationTime),
                 SigningCredentials = signingCredentials,
-                EncryptingCredentials = encryptionCredentials,
-                Subject = new ClaimsIdentity(claims),
-                
+                EncryptingCredentials = encryptingCredentials,
+                Subject = new ClaimsIdentity(claims)
             };
 
-            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-            JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
-            JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
-
             var tokenHandler = new JwtSecurityTokenHandler();
+
             var securityToken = tokenHandler.CreateToken(descriptor);
-            string token = tokenHandler.WriteToken(securityToken);
-            return token;
+
+            var encryptedJwt = tokenHandler.WriteToken(securityToken);
+
+            return encryptedJwt;
         }
-        private IEnumerable<Claim> _gerClaims(User user)
+        private IEnumerable<Claim> _getClaims(User user)
         {
-            //JwtRegisteredClaimNames.Sub
             var list = new List<Claim>()
             {
-                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.MobilePhone, "09121234567"),
             };
@@ -65,7 +61,6 @@ namespace Services.Services
             {
                 list.Add(new Claim(ClaimTypes.Role, item.Name));
             }
-            //list.Add(new Claim("X", "Y"));
             return list;
         }
     }

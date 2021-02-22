@@ -40,6 +40,7 @@ namespace MyApi
             {
                 options.UseSqlServer(Configuration.GetSection("ConnectionsString").Value);
             });
+            services.AddCustomIdentity(_siteSettings.IdentitySettings);
             services.AddControllers();
             services.AddElmah<SqlErrorLog>(options =>
             {
